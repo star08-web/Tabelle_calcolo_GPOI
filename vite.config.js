@@ -59,7 +59,7 @@ function swPrecachePlugin() {
       const { join, relative, sep } = await import('node:path');
       const { createHash } = await import('node:crypto');
       const root = process.cwd();
-      const swPath = join(distDir, 'sw.js');
+      const swPath = join('dist', 'sw.js');
       if (!existsSync(swPath)) return;
 
       const files = [];
@@ -69,12 +69,12 @@ function swPrecachePlugin() {
           const st = statSync(full);
           if (st.isDirectory()) walk(full);
           else {
-            const rel = './' + relative(distDir, full).split(sep).join('/');
+            const rel = './' + relative('dist', full).split(sep).join('/');
             if (rel !== './sw.js') files.push(rel);
           }
         }
       };
-      walk(distDir);
+      walk('dist');
 
       const manifest = files.sort();
       const source = readFileSync(swPath, 'utf8');
