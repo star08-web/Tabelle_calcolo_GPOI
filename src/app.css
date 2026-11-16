@@ -1,0 +1,844 @@
+/* =========================================================================
+   Mini-Foglio di Calcolo — foglio di stile applicazione
+   -------------------------------------------------------------------------
+   Base: Pico.css v1 (@picocss/pico@1) per i componenti (bottoni, input,
+   dialog, griglia). Qui sotto gli stili specifici del foglio di calcolo:
+   ribbon, barra delle formule, griglia virtualizzata, pannello AI.
+   ========================================================================= */
+
+@import '@picocss/pico/css/pico.min.css';
+
+/* ------------------------------------------------------------------ */
+/* Token di layout                                                     */
+/* ------------------------------------------------------------------ */
+:root {
+  --row-h: 26px;
+  --col-w: 104px;
+  --hdr-w: 58px;
+  --hdr-h: 28px;
+  --ribbon-bg: var(--card-sectioning-background-color, #f4f6fa);
+  --ribbon-fg: var(--pico-form-label-color, #1f2430);
+  --ribbon-accent: var(--pico-primary-background, #0b3d91);
+  --grid-border: var(--pico-muted-border-color, #d8dde7);
+  --grid-border-strong: var(--pico-muted-border-color, #c2c9d6);
+  --cell-selected-bg: var(--pico-primary-focus, rgba(11, 61, 145, 0.1));
+  --cell-header-bg: var(--pico-card-sectioning-background-color, #eef1f6);
+  --status-bg: var(--pico-card-sectioning-background-color, #eef1f6);
+}
+
+@media (max-width: 720px) {
+  :root {
+    --col-w: 92px;
+    --hdr-w: 48px;
+  }
+}
+
+/* ------------------------------------------------------------------ */
+/* Override dei default di Pico v1                                     */
+/* ------------------------------------------------------------------ */
+/* Pico v1 imposta "button { display:block; width:100% }": nel ribbon, nella
+   barra del titolo e nei pannelli i pulsanti devono invece adattarsi al
+   proprio contenuto. */
+.titlebar button,
+.ribbon-btn,
+.ribbon-tab,
+.ai-actions button,
+.ai-panel header button,
+.install-banner button,
+dialog.sheet-dialog button,
+.statusbar button {
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Struttura generale                                                  */
+/* ------------------------------------------------------------------ */
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+}
+
+body {
+  overflow: hidden;
+  background: var(--pico-background-color);
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    sans-serif;
+  font-size: 0.9rem;
+}
+
+#app {
+  height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  min-height: 0;
+}
+
+/* ------------------------------------------------------------------ */
+/* Barra del titolo                                                    */
+/* ------------------------------------------------------------------ */
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.7rem;
+  background: linear-gradient(90deg, #0b3d91, #1e5bc4);
+  color: #fff;
+  flex: 0 0 auto;
+}
+
+.titlebar .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  font-size: 0.95rem;
+  margin: 0;
+  color: #fff;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.titlebar .brand svg {
+  width: 20px;
+  height: 20px;
+  flex: 0 0 auto;
+}
+
+.titlebar .spacer {
+  flex: 1 1 auto;
+}
+
+.titlebar .pill {
+  font-size: 0.68rem;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  white-space: nowrap;
+}
+
+.titlebar .pill.offline {
+  background: rgba(255, 193, 7, 0.22);
+  border-color: rgba(255, 193, 7, 0.45);
+}
+
+.titlebar button.icon-btn {
+  margin: 0;
+  padding: 0.25rem 0.45rem;
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  color: #fff;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.titlebar button.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.26);
+}
+
+/* ------------------------------------------------------------------ */
+/* Ribbon                                                              */
+/* ------------------------------------------------------------------ */
+.ribbon {
+  flex: 0 0 auto;
+  background: var(--ribbon-bg);
+  color: var(--ribbon-fg);
+  border-bottom: 1px solid var(--grid-border);
+}
+
+.ribbon-tabs {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.1rem;
+  padding: 0 0.5rem;
+  border-bottom: 1px solid var(--grid-border);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.ribbon-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.ribbon-tab {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  padding: 0.45rem 0.85rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.ribbon-tab:hover {
+  background: rgba(11, 61, 145, 0.07);
+}
+
+.ribbon-tab.active {
+  border-bottom-color: var(--ribbon-accent);
+  color: var(--ribbon-accent);
+}
+
+.ribbon-body {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  padding: 0.35rem 0.4rem;
+  min-height: 74px;
+  scrollbar-width: thin;
+}
+
+.ribbon-body::-webkit-scrollbar {
+  height: 6px;
+}
+
+.ribbon-body::-webkit-scrollbar-thumb {
+  background: var(--grid-border-strong);
+  border-radius: 3px;
+}
+
+.ribbon-group {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0 0.6rem;
+  border-right: 1px solid var(--grid-border);
+  flex: 0 0 auto;
+}
+
+.ribbon-group:last-child {
+  border-right: 0;
+}
+
+.ribbon-group-title {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  opacity: 0.62;
+  text-align: center;
+  margin-top: auto;
+  padding-top: 0.2rem;
+  white-space: nowrap;
+}
+
+.ribbon-items {
+  display: flex;
+  align-items: center;
+  gap: 0.18rem;
+  min-height: 52px;
+}
+
+.ribbon-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.2rem;
+  min-width: 46px;
+  min-height: 46px;
+  padding: 0.3rem 0.4rem;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: inherit;
+  font-size: 0.63rem;
+  line-height: 1.1;
+  cursor: pointer;
+  text-align: center;
+}
+
+.ribbon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ribbon-btn:hover:not(:disabled) {
+  background: rgba(11, 61, 145, 0.09);
+  border-color: rgba(11, 61, 145, 0.18);
+}
+
+.ribbon-btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.ribbon-btn.active {
+  background: rgba(11, 61, 145, 0.16);
+  border-color: rgba(11, 61, 145, 0.3);
+  color: var(--ribbon-accent);
+}
+
+.ribbon-btn.wide {
+  min-width: 92px;
+}
+
+.ribbon-btn .label {
+  max-width: 84px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ribbon-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--grid-border);
+  margin: 0 0.25rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Barra delle formule                                                 */
+/* ------------------------------------------------------------------ */
+.formula-bar {
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  padding: 0.3rem 0.5rem;
+  background: var(--pico-card-sectioning-background-color, #f7f8fb);
+  border-bottom: 1px solid var(--grid-border);
+  flex: 0 0 auto;
+}
+
+.name-box {
+  width: 92px;
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.82rem;
+  background: var(--pico-background-color);
+  border: 1px solid var(--grid-border);
+  border-radius: 5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.fx-box {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  font-style: italic;
+  font-weight: 700;
+  color: var(--pico-muted-color);
+  background: var(--pico-background-color);
+  border: 1px solid var(--grid-border);
+  border-radius: 5px;
+  flex: 0 0 auto;
+}
+
+.formula-bar input {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  font-family: 'Cascadia Mono', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.5rem;
+  height: 30px;
+}
+
+.formula-bar input.invalid {
+  border-color: var(--pico-del-color, #c0392b);
+}
+
+/* ------------------------------------------------------------------ */
+/* Griglia virtualizzata                                               */
+/* ------------------------------------------------------------------ */
+.grid-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  align-items: stretch;
+  position: relative;
+  background: var(--pico-background-color);
+}
+
+.sheet {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: grid;
+  grid-template-columns: var(--hdr-w) 1fr;
+  grid-template-rows: var(--hdr-h) 1fr;
+  background: var(--pico-background-color);
+  position: relative;
+}
+
+.sheet-corner {
+  grid-area: 1 / 1;
+  background: var(--cell-header-bg);
+  border-right: 1px solid var(--grid-border-strong);
+  border-bottom: 1px solid var(--grid-border-strong);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6rem;
+  color: var(--pico-muted-color);
+  user-select: none;
+  z-index: 3;
+}
+
+.sheet-colhead {
+  grid-area: 1 / 2;
+  overflow: hidden;
+  position: relative;
+  background: var(--cell-header-bg);
+  border-bottom: 1px solid var(--grid-border-strong);
+}
+
+.sheet-rowhead {
+  grid-area: 2 / 1;
+  overflow: hidden;
+  position: relative;
+  background: var(--cell-header-bg);
+  border-right: 1px solid var(--grid-border-strong);
+}
+
+.sheet-body {
+  grid-area: 2 / 2;
+  overflow: auto;
+  position: relative;
+  outline: none;
+  overscroll-behavior: contain;
+}
+
+.sheet-canvas {
+  position: relative;
+}
+
+.hcell {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--pico-muted-color);
+  border-right: 1px solid var(--grid-border);
+  border-bottom: 1px solid var(--grid-border);
+  user-select: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.hcell.row {
+  left: 0;
+  width: var(--hdr-w);
+  height: var(--row-h);
+}
+
+.hcell.col {
+  left: 0;
+  height: var(--hdr-h);
+}
+
+.hcell.active {
+  background: rgba(11, 61, 145, 0.14);
+  color: var(--ribbon-accent);
+}
+
+.cell {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 5px;
+  font-size: 0.8rem;
+  border-right: 1px solid var(--grid-border);
+  border-bottom: 1px solid var(--grid-border);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  background: var(--pico-background-color);
+  cursor: cell;
+  contain: strict;
+}
+
+.cell.number {
+  justify-content: flex-end;
+  font-variant-numeric: tabular-nums;
+}
+
+.cell.text {
+  justify-content: flex-start;
+}
+
+.cell.formula {
+  color: var(--pico-primary, #0b3d91);
+}
+
+.cell.selected {
+  outline: 2px solid var(--ribbon-accent);
+  outline-offset: -2px;
+  z-index: 2;
+  background: var(--cell-selected-bg);
+}
+
+.cell.in-row,
+.cell.in-col {
+  background: rgba(11, 61, 145, 0.045);
+}
+
+.cell.in-range {
+  background: rgba(11, 61, 145, 0.09);
+}
+
+.selection-range {
+  position: absolute;
+  border: 2px solid var(--ribbon-accent);
+  pointer-events: none;
+  z-index: 3;
+  border-radius: 2px;
+}
+
+.cell.error {
+  color: var(--pico-del-color, #c0392b);
+  background: rgba(192, 57, 43, 0.07);
+  font-weight: 600;
+}
+
+.cell.bold {
+  font-weight: 700;
+}
+.cell.italic {
+  font-style: italic;
+}
+.cell.align-center {
+  justify-content: center;
+}
+.cell.align-right {
+  justify-content: flex-end;
+}
+
+.cell-editor {
+  position: absolute;
+  z-index: 10;
+  padding: 0 4px;
+  font-family: 'Cascadia Mono', 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.8rem;
+  border: 2px solid var(--ribbon-accent);
+  border-radius: 2px;
+  background: var(--pico-background-color);
+  color: var(--pico-color);
+  outline: none;
+  min-width: 40px;
+}
+
+.editor-hint {
+  position: absolute;
+  z-index: 11;
+  font-size: 0.62rem;
+  color: var(--pico-muted-color);
+  background: var(--pico-background-color);
+  border: 1px solid var(--grid-border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ------------------------------------------------------------------ */
+/* Barra di stato                                                      */
+/* ------------------------------------------------------------------ */
+.statusbar {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.22rem 0.7rem;
+  background: var(--status-bg);
+  border-top: 1px solid var(--grid-border);
+  font-size: 0.72rem;
+  color: var(--pico-muted-color);
+  overflow-x: auto;
+  scrollbar-width: none;
+  white-space: nowrap;
+}
+
+.statusbar::-webkit-scrollbar {
+  display: none;
+}
+
+.statusbar .spacer {
+  flex: 1 1 auto;
+}
+
+.statusbar .chip {
+  padding: 0.05rem 0.45rem;
+  border-radius: 999px;
+  background: var(--pico-background-color);
+  border: 1px solid var(--grid-border);
+}
+
+.statusbar .chip.err {
+  color: var(--pico-del-color, #c0392b);
+  border-color: var(--pico-del-color, #c0392b);
+}
+
+.statusbar .chip.ok {
+  color: var(--pico-success-color, #1a7f4b);
+  border-color: var(--pico-success-color, #1a7f4b);
+}
+
+/* ------------------------------------------------------------------ */
+/* Pannello AI                                                         */
+/* ------------------------------------------------------------------ */
+.ai-panel {
+  width: 360px;
+  flex: 0 0 auto;
+  border-left: 1px solid var(--grid-border);
+  background: var(--pico-card-background-color, #fff);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ai-panel header {
+  padding: 0.5rem 0.7rem;
+  border-bottom: 1px solid var(--grid-border);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 700;
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.ai-panel header button {
+  margin: 0;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--grid-border);
+  color: inherit;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.ai-body {
+  padding: 0.6rem 0.7rem;
+  overflow-y: auto;
+  flex: 1 1 auto;
+  font-size: 0.78rem;
+}
+
+.ai-body textarea,
+.ai-body input {
+  font-size: 0.78rem;
+  margin-bottom: 0.4rem;
+}
+
+.ai-body textarea {
+  min-height: 68px;
+}
+
+.ai-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.6rem;
+}
+
+.ai-actions button {
+  margin: 0;
+  padding: 0.28rem 0.55rem;
+  font-size: 0.73rem;
+}
+
+.ai-result {
+  background: var(--pico-muted-background-color, #f4f6fa);
+  border: 1px solid var(--grid-border);
+  border-radius: 6px;
+  padding: 0.5rem 0.6rem;
+  white-space: pre-wrap;
+  word-break: break-word;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.ai-result code {
+  font-family: 'Cascadia Mono', Consolas, monospace;
+  background: var(--pico-background-color);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+
+.ai-list {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
+.ai-list li {
+  margin-bottom: 0.2rem;
+}
+
+.ai-note {
+  font-size: 0.7rem;
+  color: var(--pico-muted-color);
+  margin-top: 0.5rem;
+}
+
+.ai-tab {
+  display: inline-block;
+  font-size: 0.7rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--grid-border);
+  cursor: pointer;
+  margin-right: 0.25rem;
+}
+
+.ai-tab.active {
+  background: var(--ribbon-accent);
+  border-color: var(--ribbon-accent);
+  color: #fff;
+}
+
+/* ------------------------------------------------------------------ */
+/* Dialog / modali                                                     */
+/* ------------------------------------------------------------------ */
+dialog.sheet-dialog {
+  max-width: min(900px, 94vw);
+  border-radius: 10px;
+  padding: 0;
+}
+
+dialog.sheet-dialog .dlg-head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid var(--grid-border);
+  font-weight: 700;
+}
+
+dialog.sheet-dialog .dlg-head .spacer {
+  flex: 1 1 auto;
+}
+
+dialog.sheet-dialog .dlg-body {
+  padding: 0.9rem 1rem;
+  max-height: 70vh;
+  overflow: auto;
+}
+
+.fn-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+
+.fn-table th,
+.fn-table td {
+  text-align: left;
+  padding: 0.35rem 0.5rem;
+  border-bottom: 1px solid var(--grid-border);
+  vertical-align: top;
+}
+
+.fn-table th {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.7;
+}
+
+.fn-table code {
+  font-family: 'Cascadia Mono', Consolas, monospace;
+  font-size: 0.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Utility                                                             */
+/* ------------------------------------------------------------------ */
+.hidden {
+  display: none !important;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.install-banner {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  background: rgba(11, 61, 145, 0.1);
+  border-bottom: 1px solid var(--grid-border);
+  font-size: 0.78rem;
+}
+
+.install-banner button {
+  margin: 0;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+}
+
+/* ------------------------------------------------------------------ */
+/* Responsive                                                          */
+/* ------------------------------------------------------------------ */
+@media (max-width: 900px) {
+  .ai-panel {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    box-shadow: -6px 0 18px rgba(0, 0, 0, 0.12);
+    max-width: 92vw;
+  }
+}
+
+@media (max-width: 640px) {
+  .titlebar .brand span.full {
+    display: none;
+  }
+  .ribbon-body {
+    min-height: 62px;
+  }
+  .ribbon-btn {
+    min-width: 40px;
+    min-height: 40px;
+    font-size: 0.58rem;
+  }
+  .statusbar {
+    font-size: 0.66rem;
+  }
+}

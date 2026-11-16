@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="it" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>Mini-Foglio di Calcolo — PWA</title>
+    <meta
+      name="description"
+      content="Mini-Foglio di Calcolo: una PWA installabile e offline con motore di calcolo scritto da zero, interfaccia a ribbon e assistente AI."
+    />
+    <meta name="theme-color" content="#0b3d91" />
+    <meta name="color-scheme" content="light dark" />
+
+    <!-- PWA: manifest e icone con percorsi RELATIVI (necessari su GitHub Pages) -->
+    <link rel="manifest" href="./manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="./icons/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
+    <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Mini-Foglio" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <noscript>
+      <p style="padding: 2rem; font-family: system-ui">
+        Questa applicazione richiede JavaScript.
+      </p>
+    </noscript>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
