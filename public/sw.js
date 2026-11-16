@@ -55,10 +55,36 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      // addAll fallisce se una singola risposta non e' ok: si usa allSettled
-      // per non bloccare l'installazione.
-      await Promise.allSettled(
-        precacheList().map((url) => cache.add(new Request(url, { cache: 'reload' })))
+      const urls = precacheList();
+      const failures = [];
+
+      // I file vengono messi in cache uno alla volta: il download parallelo
+      // puo' superare il limite di connessioni per host del browser (6 per
+      // HTTP/1.1) e i download in coda possono venir interrotti.
+      for (const url of urls) {
+        try {
+          await cache.add(new Request(url, { cache: 'reload' }));
+        } catch (error) {
+          failures.push({ url, error: String(error) });
+        }
+      }
+
+      if (failures.length) {
+        console.warn('[sw] precache parziale:', failures);
+        // traccia diagnostica consultabile dalla pagina (solo in caso di errore)
+        await cache.put(
+          './__precache-errors',
+          new Response(JSON.stringify(failures), {
+            headers: { 'Content-Type': 'application/json' },
+          })
+        );
+      }
+      // marcatore: la precache e' completata
+      await cache.put(
+        './__precache-done',
+        new Response(new Date().toISOString(), {
+          headers: { 'Content-Type': 'text/plain' },
+        })
       );
       await self.skipWaiting();
     })()

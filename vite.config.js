@@ -59,7 +59,6 @@ function swPrecachePlugin() {
       const { join, relative, sep } = await import('node:path');
       const { createHash } = await import('node:crypto');
       const root = process.cwd();
-      const distDir = join(root, 'dist');
       const swPath = join(distDir, 'sw.js');
       if (!existsSync(swPath)) return;
 
@@ -79,10 +78,11 @@ function swPrecachePlugin() {
 
       const manifest = files.sort();
       const source = readFileSync(swPath, 'utf8');
-      // Il placeholder e' racchiuso in una stringa: si sostituisce con il
-      // JSON serializzato della lista (stringa JS valida).
       const version = createHash('sha256').update(manifest.join('|')).digest('hex').slice(0, 12);
-      let out = source.replace('__PRECACHE_MANIFEST__', JSON.stringify(JSON.stringify(manifest)));
+      // Il placeholder e' racchiuso in una stringa JS: al build time al suo
+      // posto viene scritto il testo JSON dell'elenco, cosi' nel service
+      // worker la riga diventa  JSON.parse('["...","..."]')  -> un array.
+      let out = source.replace('__PRECACHE_MANIFEST__', JSON.stringify(manifest));
       // Ogni build produce una cache nuova: le cache precedenti vengono
       // eliminate dall'evento "activate".
       out = out.replace('__CACHE_VERSION__', version);
